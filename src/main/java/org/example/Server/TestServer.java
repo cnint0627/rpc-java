@@ -14,14 +14,14 @@ public class TestServer {
         ServiceProvider serviceProvider = new ServiceProvider("127.0.0.1", 1234);
         serviceProvider.provideServiceInterface(userService);
         RpcServer rpcServer = new NettyRpcServer(serviceProvider);
-        new Thread(() -> {
-            try {
-                Thread.sleep(20000);
-                rpcServer.stop();
-            } catch (Exception e) {
-
-            }
-        }).start();
+//        new Thread(() -> {
+//            try {
+//                Thread.sleep(20000);
+//                rpcServer.stop();
+//            } catch (Exception e) {
+//
+//            }
+//        }).start();
         rpcServer.start(1234);
     }
 }

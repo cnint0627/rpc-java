@@ -38,7 +38,7 @@ public class ZKServiceRegister implements ServiceRegister {
                     .withMode(CreateMode.EPHEMERAL)
                     .forPath(path);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("服务 " + serviceName + "//" + getAddress(serviceAddress) + " 已经注册过了");
         }
     }
     private String getAddress(InetSocketAddress serviceAddress) {

@@ -20,7 +20,7 @@ public class NettyRpcClient implements RpcClient {
     private static final Bootstrap bootstrap;
     private static final EventLoopGroup eventLoopGroup;
     private ServiceCenter serviceCenter;
-    public NettyRpcClient() {
+    public NettyRpcClient() throws InterruptedException {
         serviceCenter = new ZKServiceCenter();
     }
     static {
@@ -33,6 +33,9 @@ public class NettyRpcClient implements RpcClient {
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
         InetSocketAddress address = serviceCenter.serviceDiscovery(request.getInterfaceName());
+        if (address == null) {
+            return null;
+        }
         String host = address.getHostName();
         int port = address.getPort();
         try {

@@ -6,6 +6,7 @@ import org.example.Client.client.RpcClient;
 import org.example.Client.client.impl.NettyRpcClient;
 import org.example.Client.client.impl.SimpleSocketClient;
 import org.example.common.message.RpcRequest;
+import org.example.common.message.RpcResponse;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,7 +14,7 @@ import java.lang.reflect.Proxy;
 
 public class ClientProxy implements InvocationHandler {
     private RpcClient rpcClient;
-    public ClientProxy() {
+    public ClientProxy() throws InterruptedException {
         this.rpcClient = new NettyRpcClient();
     }
     @Override
@@ -24,7 +25,11 @@ public class ClientProxy implements InvocationHandler {
                 .params(args)
                 .paramsType(method.getParameterTypes())
                 .build();
-        return rpcClient.sendRequest(request).getData();
+        RpcResponse response = rpcClient.sendRequest(request);
+        if (response == null) {
+            return null;
+        }
+        return response.getData();
     }
     public <T>T getProxy(Class<T> clazz) {
         return (T)Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, this);
