@@ -8,7 +8,7 @@ public class TestClient {
     public static void main(String[] args) {
         ClientProxy proxy = new ClientProxy("127.0.0.1", 1234);
         UserService userService = proxy.getProxy(UserService.class);
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1; i++) {
             User user = userService.getUserByUid("test");
             System.out.println(user);
         }

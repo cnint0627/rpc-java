@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolRpcServer implements RpcServer {
     private final ThreadPoolExecutor threadPool;
     private ServiceProvider serviceProvider;
-    private boolean isStop;
+    private ServerSocket serverSocket;
     public ThreadPoolRpcServer(ServiceProvider serviceProvider) {
         this.serviceProvider = serviceProvider;
         this.threadPool = new ThreadPoolExecutor(
@@ -25,18 +25,25 @@ public class ThreadPoolRpcServer implements RpcServer {
     @Override
     public void start(int port) {
         try {
-            ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("服务器已启动");
-            while (!isStop) {
+            serverSocket = new ServerSocket(port);
+            System.out.println("服务端已启动");
+            while (true) {
                 Socket socket = serverSocket.accept();
                 threadPool.execute(new WorkThread(socket, serviceProvider));
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            threadPool.shutdown();
         }
     }
     @Override
     public void stop() {
-        isStop = true;
+        try {
+            serverSocket.close();
+            System.out.println("服务端已关闭");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

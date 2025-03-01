@@ -14,13 +14,13 @@ import java.net.Socket;
 public class SimpleRpcServer implements RpcServer {
     @NonNull
     private ServiceProvider serviceProvider;
-    private boolean isStop;
+    private ServerSocket serverSocket;
     @Override
     public void start(int port) {
         try {
-            ServerSocket serverSocket = new ServerSocket(port);
-            System.out.println("服务器已启动");
-            while (!isStop) {
+            serverSocket = new ServerSocket(port);
+            System.out.println("服务端已启动");
+            while (true) {
                 Socket socket = serverSocket.accept();
                 new Thread(new WorkThread(socket, serviceProvider)).start();
             }
@@ -30,6 +30,11 @@ public class SimpleRpcServer implements RpcServer {
     }
     @Override
     public void stop() {
-        isStop = false;
+        try {
+            serverSocket.close();
+            System.out.println("服务端已关闭");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

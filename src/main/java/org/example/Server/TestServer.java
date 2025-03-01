@@ -2,6 +2,7 @@ package org.example.Server;
 
 import org.example.Server.provider.ServiceProvider;
 import org.example.Server.server.RpcServer;
+import org.example.Server.server.impl.NettyRpcServer;
 import org.example.Server.server.impl.SimpleRpcServer;
 import org.example.Server.server.impl.ThreadPoolRpcServer;
 import org.example.common.service.UserService;
@@ -12,7 +13,15 @@ public class TestServer {
         UserService userService = new UserServiceImpl();
         ServiceProvider serviceProvider = new ServiceProvider();
         serviceProvider.provideServiceInterface(userService);
-        RpcServer rpcServer = new ThreadPoolRpcServer(serviceProvider);
+        RpcServer rpcServer = new NettyRpcServer(serviceProvider);
+        new Thread(() -> {
+            try {
+                Thread.sleep(20000);
+                rpcServer.stop();
+            } catch (Exception e) {
+
+            }
+        }).start();
         rpcServer.start(1234);
     }
 }
