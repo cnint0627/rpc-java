@@ -4,11 +4,9 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.example.Server.provider.ServiceProvider;
 import org.example.Server.server.RpcServer;
-import org.example.Server.server.netty.initializer.NettyServerInitializer;
+import org.example.Server.netty.initializer.NettyServerInitializer;
 
 public class NettyRpcServer implements RpcServer {
     private ServiceProvider serviceProvider;

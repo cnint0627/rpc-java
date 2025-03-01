@@ -1,4 +1,4 @@
-package org.example.Server.server.netty.initializer;
+package org.example.Server.netty.initializer;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,7 +10,7 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.AllArgsConstructor;
 import org.example.Server.provider.ServiceProvider;
-import org.example.Server.server.netty.handler.NettyServerHandler;
+import org.example.Server.netty.handler.NettyServerHandler;
 
 @AllArgsConstructor
 public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {
