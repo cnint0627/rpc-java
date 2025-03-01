@@ -9,7 +9,7 @@ import org.example.Server.provider.ServiceProvider;
 import org.example.Server.netty.handler.NettyServerHandler;
 import org.example.common.serializer.coder.Decoder;
 import org.example.common.serializer.coder.Encoder;
-import org.example.common.serializer.serializer.JsonSerializer;
+import org.example.common.serializer.serializer.imple.JsonSerializer;
 
 @AllArgsConstructor
 public class NettyServerInitializer extends ChannelInitializer<SocketChannel> {

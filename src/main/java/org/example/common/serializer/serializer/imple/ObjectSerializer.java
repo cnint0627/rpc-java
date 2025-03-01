@@ -1,12 +1,14 @@
-package org.example.common.serializer.serializer;
+package org.example.common.serializer.serializer.imple;
 
+
+import org.example.common.serializer.serializer.Serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ObjectSerializer implements Serializer{
+public class ObjectSerializer implements Serializer {
     @Override
     public byte[] serialize(Object object) {
         byte[] bytes = null;

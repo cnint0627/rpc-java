@@ -10,18 +10,15 @@ import org.example.common.service.impl.UserServiceImpl;
 
 public class TestServer {
     public static void main(String[] args) {
-        UserService userService = new UserServiceImpl();
-        ServiceProvider serviceProvider = new ServiceProvider("127.0.0.1", 1234);
-        serviceProvider.provideServiceInterface(userService);
-        RpcServer rpcServer = new NettyRpcServer(serviceProvider);
-//        new Thread(() -> {
-//            try {
-//                Thread.sleep(20000);
-//                rpcServer.stop();
-//            } catch (Exception e) {
-//
-//            }
-//        }).start();
-        rpcServer.start(1234);
+        for (int i = 0; i < 10; i++) {
+            int port = 1234 + i;
+            new Thread(() -> {
+                UserService userService = new UserServiceImpl();
+                ServiceProvider serviceProvider = new ServiceProvider("127.0.0.1", port);
+                serviceProvider.provideServiceInterface(userService);
+                RpcServer rpcServer = new NettyRpcServer(serviceProvider);
+                rpcServer.start(port);
+            }).start();
+        }
     }
 }

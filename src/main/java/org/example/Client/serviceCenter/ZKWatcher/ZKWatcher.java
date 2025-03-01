@@ -20,8 +20,8 @@ public class ZKWatcher {
                 // 回调函数里面报错不会有输出
                 String[] oldPathList = parseData(oldData);
                 String[] pathList = parseData(data);
-                System.out.println("监听到注册中心变化: " + type.name());
-                System.out.println(oldPathList + " " + pathList);
+//                System.out.println("监听到注册中心变化: " + type.name());
+//                System.out.println(oldPathList + " " + pathList);
                 switch (type.name()) {
                     case "NODE_CREATED":
                         if (pathList.length <= 2) {
