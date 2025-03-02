@@ -3,6 +3,7 @@ package org.example.Server.netty.handler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.Server.provider.ServiceProvider;
 import org.example.common.message.RpcRequest;
 import org.example.common.message.RpcResponse;
@@ -10,6 +11,7 @@ import org.example.common.message.RpcResponse;
 import java.lang.reflect.Method;
 
 @AllArgsConstructor
+@Slf4j
 public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
     private ServiceProvider serviceProvider;
     @Override
@@ -25,12 +27,12 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
     }
 
     public RpcResponse getResponse(RpcRequest rpcRequest) {
-        String interfaceName = rpcRequest.getInterfaceName();
-        if (!serviceProvider.getServiceToken(interfaceName)) {
-            System.out.println("服务 " + interfaceName + " 限流");
-            return RpcResponse.fail("服务 " + interfaceName + " 限流");
+        String serviceName = rpcRequest.getInterfaceName();
+        if (!serviceProvider.getServiceToken(serviceName)) {
+            log.info("服务 {} 限流", serviceName);
+            return RpcResponse.fail("服务限流");
         }
-        Object service = serviceProvider.getServiceInterface(interfaceName);
+        Object service = serviceProvider.getServiceInterface(serviceName);
         try {
             Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamsType());
             Object result = method.invoke(service, rpcRequest.getParams());

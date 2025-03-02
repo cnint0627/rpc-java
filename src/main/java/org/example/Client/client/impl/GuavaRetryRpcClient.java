@@ -1,6 +1,7 @@
 package org.example.Client.client.impl;
 
 import com.github.rholder.retry.*;
+import lombok.extern.slf4j.Slf4j;
 import org.example.Client.client.RetryRpcClient;
 import org.example.Client.client.RpcClient;
 import org.example.common.message.RpcRequest;
@@ -9,6 +10,7 @@ import org.example.common.message.RpcResponse;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 // 装饰者模式
 public class GuavaRetryRpcClient implements RetryRpcClient {
     private RpcClient rpcClient;
@@ -21,6 +23,7 @@ public class GuavaRetryRpcClient implements RetryRpcClient {
     }
     @Override
     public RpcResponse sendRequestWithRetry(RpcRequest request) {
+        String serviceName = request.getInterfaceName();
         Retryer<RpcResponse> retryer = RetryerBuilder.<RpcResponse>newBuilder()
                 .retryIfException()
                 .retryIfResult(response -> Objects.equals(response.getCode(), 500))
@@ -29,14 +32,14 @@ public class GuavaRetryRpcClient implements RetryRpcClient {
                 .withRetryListener(new RetryListener() {
                     @Override
                     public <V> void onRetry(Attempt<V> attempt) {
-                        System.out.println("Guava-Retry: 第 " + attempt.getAttemptNumber() + " 次调用");
+                        log.info("请求重试: 第 {} 次调用服务 {}", attempt.getAttemptNumber(), serviceName);
                     }
                 })
                 .build();
         try {
             return retryer.call(() -> rpcClient.sendRequest(request));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("服务 {} 请求超时", serviceName);
             return RpcResponse.fail("服务请求超时");
         }
     }

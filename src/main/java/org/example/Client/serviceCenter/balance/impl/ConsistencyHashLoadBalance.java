@@ -1,10 +1,11 @@
 package org.example.Client.serviceCenter.balance.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.Client.serviceCenter.balance.LoadBalance;
 
 import java.util.*;
 
-
+@Slf4j
 public class ConsistencyHashLoadBalance implements LoadBalance {
     private static final int VIRTUAL_NUM = 5;
     private List<String> realNodes = new ArrayList<>();
@@ -30,7 +31,6 @@ public class ConsistencyHashLoadBalance implements LoadBalance {
             key = subMap.firstKey();
         }
         String node = shards.get(key);
-        System.out.println("一致性哈希负载均衡选择了 " + node + " 服务器");
         return node;
     }
     /**
@@ -53,7 +53,7 @@ public class ConsistencyHashLoadBalance implements LoadBalance {
     }
     private void addNode(String node) {
         realNodes.add(node);
-        System.out.println("真实节点 " + node + " 上线添加");
+        log.info("真实节点 {} 上线添加", node);
         for (int i = 0; i < VIRTUAL_NUM; i++) {
             String virtualNode = node + "&&VN" + i;
             shards.put(getHash(virtualNode), node);
@@ -61,7 +61,7 @@ public class ConsistencyHashLoadBalance implements LoadBalance {
     }
     private void delNode(String node) {
         realNodes.remove(node);
-        System.out.println("真实节点 " + node + " 下线移除");
+        log.info("真实节点 {} 下线移除", node);
         for (int i = 0; i < VIRTUAL_NUM; i++) {
             String virtualNode = node + "&&VN" + i;
             shards.remove(getHash(virtualNode));

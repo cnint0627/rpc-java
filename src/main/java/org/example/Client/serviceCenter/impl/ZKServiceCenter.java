@@ -1,38 +1,40 @@
 package org.example.Client.serviceCenter.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.example.Client.cache.ServiceCache;
-import org.example.Client.circuitBreaker.CircuitBreaker;
-import org.example.Client.circuitBreaker.CircuitBreakerProvider;
 import org.example.Client.serviceCenter.ServiceCenter;
 import org.example.Client.serviceCenter.ZKWatcher.ZKWatcher;
 import org.example.Client.serviceCenter.balance.LoadBalance;
 import org.example.Client.serviceCenter.balance.impl.ConsistencyHashLoadBalance;
-import org.example.common.message.RpcResponse;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class ZKServiceCenter implements ServiceCenter {
     private CuratorFramework client;
     private ServiceCache cache;
     private LoadBalance balance;
-    private static final String ROOT_PATH = "RPC_ROOT";
-    private static final String RETRY_PATH = "RPC_RETRY";
-    public ZKServiceCenter() throws InterruptedException {
+    private static final String ROOT = "RPC_ROOT";
+    private static final String RETRY = "RPC_RETRY";
+    public ZKServiceCenter() {
         // Zookeeper客户端
         RetryPolicy policy = new ExponentialBackoffRetry(100, 3);
         this.client = CuratorFrameworkFactory.builder()
                 .connectString("127.0.0.1:2181")
                 .sessionTimeoutMs(40000)
                 .retryPolicy(policy)
-                .namespace(ROOT_PATH)
+                .namespace(ROOT)
                 .build();
         this.client.start();
-        System.out.println("Zookeeper 连接成功");
+        log.info("Zookeeper 连接成功");
         // 监听缓存变化
         this.cache = new ServiceCache();
         ZKWatcher zkWatcher = new ZKWatcher(client, cache);
@@ -49,31 +51,33 @@ public class ZKServiceCenter implements ServiceCenter {
                 // 再从Zookeeper获取
                 addressList = client.getChildren().forPath("/" + serviceName);
                 if (addressList.isEmpty()) {
-                    System.out.println(serviceName + " 服务当前不可用");
+                    log.error("{} 服务当前不可用", serviceName);
                     return null;
                 }
             }
             String address = balance.balance(addressList);
+            log.info("负载均衡选择了 {} 服务节点", address);
             return parseAddress(address);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("服务发现失败: {}", e.getMessage());
             return null;
         }
     }
+    // 简单缓存可重试方法，实际应也使用Zookeeper Watcher实现
+    private Map<String, List<String>> retryCache = new ConcurrentHashMap<>();
     @Override
-    public boolean checkRetry(String serviceName) {
-        try {
-            // 先从本地缓存获取
-            List<String> serviceList = cache.getServiceFromCache(RETRY_PATH);
-            if (serviceList == null) {
-                // 再从Zookeeper获取
-                serviceList = client.getChildren().forPath("/" + RETRY_PATH);
+    public boolean checkRetry(String serviceName, String methodName) {
+        if (!retryCache.containsKey(serviceName)) {
+            CuratorFramework retryClient = client.usingNamespace(RETRY);
+            try {
+                List<String> retryableMethods = retryClient.getChildren().forPath("/" + serviceName);
+                retryCache.put(serviceName, retryableMethods);
+            } catch (Exception e) {
+                log.error("可重试方法检查失败: {}", e.getMessage());
+                return false;
             }
-            return serviceList.contains(serviceName);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
+        return retryCache.get(serviceName).contains(methodName);
     }
     private InetSocketAddress parseAddress(String address) {
         String[] result = address.split(":");

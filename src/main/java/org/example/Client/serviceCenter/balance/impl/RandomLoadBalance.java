@@ -11,7 +11,6 @@ public class RandomLoadBalance implements LoadBalance {
         Random random = new Random();
         int choice = random.nextInt(addressList.size());
         String address = addressList.get(choice);
-        System.out.println("Random " + address + " 服务器");
         return address;
     }
 }

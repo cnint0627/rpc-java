@@ -28,7 +28,7 @@ public class NettyRpcClient implements RpcClient {
                 .channel(NioSocketChannel.class)
                 .handler(new NettyClientInitializer());
     }
-    public NettyRpcClient(ServiceCenter serviceCenter) throws InterruptedException {
+    public NettyRpcClient(ServiceCenter serviceCenter) {
         this.serviceCenter = serviceCenter;
     }
     @Override

@@ -4,10 +4,12 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.extern.slf4j.Slf4j;
 import org.example.Server.provider.ServiceProvider;
 import org.example.Server.server.RpcServer;
 import org.example.Server.netty.initializer.NettyServerInitializer;
 
+@Slf4j
 public class NettyRpcServer implements RpcServer {
     private ServiceProvider serviceProvider;
     private final NioEventLoopGroup bossGroup;
@@ -19,7 +21,7 @@ public class NettyRpcServer implements RpcServer {
     }
     @Override
     public void start(int port) {
-        System.out.println("服务端已启动");
+        log.info("服务端已启动，端口 {}", port);
         try {
             ServerBootstrap serverBootstrap = new ServerBootstrap();
             serverBootstrap.group(bossGroup, workGroup)
@@ -28,7 +30,7 @@ public class NettyRpcServer implements RpcServer {
             ChannelFuture channelFuture = serverBootstrap.bind(port).sync();
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("服务端启动失败: {}", e.getMessage());
         } finally {
             bossGroup.shutdownGracefully();
             workGroup.shutdownGracefully();
@@ -38,6 +40,6 @@ public class NettyRpcServer implements RpcServer {
     public void stop() {
         bossGroup.shutdownGracefully();
         workGroup.shutdownGracefully();
-        System.out.println("服务端已关闭");
+        log.info("服务端已关闭");
     }
 }

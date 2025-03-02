@@ -10,7 +10,6 @@ public class RoundRobinLoadBalance implements LoadBalance {
     public String balance(List<String> addressList) {
         choice = (choice + 1) % addressList.size();
         String address = addressList.get(choice);
-        System.out.println("RoundRobin负载均衡选择了 " + address + " 服务器");
         return address;
     }
 }

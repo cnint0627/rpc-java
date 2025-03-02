@@ -23,11 +23,11 @@ public class ServiceProvider {
         this.host = host;
         this.port = port;
     }
-    public void provideServiceInterface(Object service, boolean canRetry) {
+    public void provideServiceInterface(Object service) {
         Class<?>[] interfaceName = service.getClass().getInterfaces();
         for (Class<?> clazz: interfaceName) {
             interfaceProvider.put(clazz.getName(), service);
-            serviceRegister.register(clazz.getName(), new InetSocketAddress(host, port), canRetry);
+            serviceRegister.register(clazz, new InetSocketAddress(host, port));
         }
     }
     public Object getServiceInterface(String interfaceName) {

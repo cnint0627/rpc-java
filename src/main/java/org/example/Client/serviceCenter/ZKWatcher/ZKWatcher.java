@@ -12,7 +12,7 @@ import org.example.Client.cache.ServiceCache;
 public class ZKWatcher {
     private CuratorFramework client;
     private ServiceCache cache;
-    public void watchToUpdate() throws InterruptedException {
+    public void watchToUpdate() {
         CuratorCache curatorCache = CuratorCache.build(client, "/");
         curatorCache.listenable().addListener(new CuratorCacheListener() {
             @Override
