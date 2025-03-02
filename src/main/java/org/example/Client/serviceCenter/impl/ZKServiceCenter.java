@@ -20,7 +20,6 @@ public class ZKServiceCenter implements ServiceCenter {
     private CuratorFramework client;
     private ServiceCache cache;
     private LoadBalance balance;
-    private CircuitBreakerProvider circuitBreakerProvider;
     private static final String ROOT_PATH = "RPC_ROOT";
     private static final String RETRY_PATH = "RPC_RETRY";
     public ZKServiceCenter() throws InterruptedException {
@@ -40,9 +39,6 @@ public class ZKServiceCenter implements ServiceCenter {
         zkWatcher.watchToUpdate();
         // 负载均衡
         this.balance = new ConsistencyHashLoadBalance();
-        // 服务熔断
-        this.circuitBreakerProvider = new CircuitBreakerProvider();
-
     }
     @Override
     public InetSocketAddress serviceDiscovery(String serviceName) {
@@ -77,20 +73,6 @@ public class ZKServiceCenter implements ServiceCenter {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-    @Override
-    public boolean allowRequest(String serviceName) {
-        return circuitBreakerProvider.getCircuitBreaker(serviceName).allowRequest();
-    }
-    @Override
-    public void recordStatus(String serviceName, boolean success) {
-        System.out.println("收到 " + serviceName + " 状态为 " + success + " 的记录");
-        CircuitBreaker circuitBreaker = circuitBreakerProvider.getCircuitBreaker(serviceName);
-        if (success) {
-            circuitBreaker.recordSuccess();
-        } else {
-            circuitBreaker.recordFailure();
         }
     }
     private InetSocketAddress parseAddress(String address) {

@@ -1,5 +1,6 @@
 package org.example.Client.proxy;
 
+import org.example.Client.circuitBreaker.CircuitBreaker;
 import org.example.Client.circuitBreaker.CircuitBreakerProvider;
 import org.example.Client.client.RetryRpcClient;
 import org.example.Client.client.impl.GuavaRetryRpcClient;
@@ -16,9 +17,11 @@ import java.lang.reflect.Proxy;
 public class ClientProxy implements InvocationHandler {
     private RetryRpcClient rpcClient;
     private ServiceCenter serviceCenter;
+    private CircuitBreakerProvider circuitBreakerProvider;
     public ClientProxy() throws InterruptedException {
         this.serviceCenter = new ZKServiceCenter();
         this.rpcClient = new GuavaRetryRpcClient(new NettyRpcClient(serviceCenter));
+        this.circuitBreakerProvider = new CircuitBreakerProvider();
     }
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -30,13 +33,27 @@ public class ClientProxy implements InvocationHandler {
                 .build();
         RpcResponse response;
         String serviceName = request.getInterfaceName();
-        if (serviceCenter.checkRetry(serviceName)) {
-            // 是否可以超时重试
-            response = rpcClient.sendRequestWithRetry(request);
+        CircuitBreaker circuitBreaker = circuitBreakerProvider.getCircuitBreaker(serviceName);
+        if (circuitBreaker.allowRequest()) {
+            // 是否触发服务熔断
+            if (serviceCenter.checkRetry(serviceName)) {
+                // 是否可以超时重试
+                response = rpcClient.sendRequestWithRetry(request);
+            } else {
+                response = rpcClient.sendRequest(request);
+            }
         } else {
-            response = rpcClient.sendRequest(request);
+            response = RpcResponse.fail("服务熔断");
+            System.out.println(response);
+            return null;
         }
         System.out.println(response);
+        // 将请求状态上报给熔断器
+        if (response.getCode() == 200) {
+            circuitBreaker.recordSuccess();
+        } else {
+            circuitBreaker.recordFailure();
+        }
         return response.getData();
     }
     public <T>T getProxy(Class<T> clazz) {
