@@ -6,12 +6,12 @@ public class TokenBucketRateLimit implements RateLimit {
     private int rate;
     private int capacity;
     private volatile int remaining;
-    private volatile long lastTimeStamp;
+    private volatile long lastTimestamp;
     public TokenBucketRateLimit(int capacity, int rate) {
         this.rate = rate;
         this.capacity = capacity;
         this.remaining = capacity;
-        this.lastTimeStamp = System.currentTimeMillis();
+        this.lastTimestamp = System.currentTimeMillis();
     }
     @Override
     public synchronized boolean getToken() {
@@ -19,11 +19,11 @@ public class TokenBucketRateLimit implements RateLimit {
             remaining--;
             return true;
         }
-        long timeStamp = System.currentTimeMillis();
-        if (timeStamp - lastTimeStamp >= rate) {
-            remaining = Math.min(capacity, remaining + (int)((timeStamp - lastTimeStamp) / rate));
+        long timestamp = System.currentTimeMillis();
+        if (timestamp - lastTimestamp >= rate) {
+            remaining = Math.min(capacity, remaining + (int)((timestamp - lastTimestamp) / rate));
             remaining--;
-            lastTimeStamp = timeStamp;
+            lastTimestamp = timestamp;
             return true;
         }
         return false;

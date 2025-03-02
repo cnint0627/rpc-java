@@ -12,7 +12,7 @@ public class RateLimitProvider {
     }
     public RateLimit getRateLimit(String serviceName) {
         if (!rateLimitMap.containsKey(serviceName)) {
-            RateLimit rateLimit = new TokenBucketRateLimit(1, 1000);
+            RateLimit rateLimit = new TokenBucketRateLimit(1, 100000);
             rateLimitMap.put(serviceName, rateLimit);
         }
         return rateLimitMap.get(serviceName);

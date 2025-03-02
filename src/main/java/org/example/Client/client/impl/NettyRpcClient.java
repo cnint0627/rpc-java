@@ -7,6 +7,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.AttributeKey;
+import org.example.Client.circuitBreaker.CircuitBreakerProvider;
 import org.example.Client.client.RpcClient;
 import org.example.Client.netty.initializer.NettyClientInitializer;
 import org.example.Client.serviceCenter.ServiceCenter;
@@ -32,9 +33,15 @@ public class NettyRpcClient implements RpcClient {
     }
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
-        InetSocketAddress address = serviceCenter.serviceDiscovery(request.getInterfaceName());
+        String serviceName = request.getInterfaceName();
+        if (!serviceCenter.allowRequest(serviceName)) {
+            System.out.println("服务 " + serviceName + " 熔断");
+            return RpcResponse.fail("服务熔断");
+        }
+        InetSocketAddress address = serviceCenter.serviceDiscovery(serviceName);
         if (address == null) {
-            return RpcResponse.fail();
+            serviceCenter.recordStatus(serviceName, false);
+            return RpcResponse.fail("服务不可用");
         }
         String host = address.getHostName();
         int port = address.getPort();
@@ -45,9 +52,15 @@ public class NettyRpcClient implements RpcClient {
             channel.closeFuture().sync();
             AttributeKey<RpcResponse> key = AttributeKey.valueOf("RpcResponse");
             RpcResponse response = channel.attr(key).get();
+            if (response.getCode() == 200) {
+                serviceCenter.recordStatus(serviceName, true);
+            } else {
+                serviceCenter.recordStatus(serviceName, false);
+            }
             return response;
         } catch (Exception e) {
             e.printStackTrace();
+            serviceCenter.recordStatus(serviceName, false);
             return RpcResponse.fail();
         }
     }

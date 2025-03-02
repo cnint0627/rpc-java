@@ -1,5 +1,6 @@
 package org.example.Client.proxy;
 
+import org.example.Client.circuitBreaker.CircuitBreakerProvider;
 import org.example.Client.client.RetryRpcClient;
 import org.example.Client.client.impl.GuavaRetryRpcClient;
 import org.example.Client.client.impl.NettyRpcClient;
@@ -28,7 +29,9 @@ public class ClientProxy implements InvocationHandler {
                 .paramsType(method.getParameterTypes())
                 .build();
         RpcResponse response;
-        if (serviceCenter.checkRetry(method.getDeclaringClass().getName())) {
+        String serviceName = request.getInterfaceName();
+        if (serviceCenter.checkRetry(serviceName)) {
+            // 是否可以超时重试
             response = rpcClient.sendRequestWithRetry(request);
         } else {
             response = rpcClient.sendRequest(request);

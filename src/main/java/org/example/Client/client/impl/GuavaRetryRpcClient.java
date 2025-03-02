@@ -37,7 +37,7 @@ public class GuavaRetryRpcClient implements RetryRpcClient {
             return retryer.call(() -> rpcClient.sendRequest(request));
         } catch (Exception e) {
             e.printStackTrace();
-            return RpcResponse.fail();
+            return RpcResponse.fail("服务请求超时");
         }
     }
 }
