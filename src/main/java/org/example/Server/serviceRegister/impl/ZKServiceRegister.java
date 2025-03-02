@@ -12,6 +12,7 @@ import java.net.InetSocketAddress;
 public class ZKServiceRegister implements ServiceRegister {
     private CuratorFramework client;
     private static final String ROOT_PATH = "RPC_ROOT";
+    private static final String RETRY_PATH = "RPC_RETRY";
     public ZKServiceRegister() {
         RetryPolicy policy = new ExponentialBackoffRetry(1000, 3);
         this.client = CuratorFrameworkFactory.builder()
@@ -24,7 +25,7 @@ public class ZKServiceRegister implements ServiceRegister {
         System.out.println("Zookeeper 连接成功");
     }
     @Override
-    public void register(String serviceName, InetSocketAddress serviceAddress) {
+    public void register(String serviceName, InetSocketAddress serviceAddress, boolean canRetry) {
         try {
             if (client.checkExists().forPath("/" + serviceName) == null) {
                 client.create()
@@ -37,6 +38,13 @@ public class ZKServiceRegister implements ServiceRegister {
                     .creatingParentsIfNeeded()
                     .withMode(CreateMode.EPHEMERAL)
                     .forPath(path);
+            if (canRetry) {
+                // 注册到重试白名单
+                client.create()
+                        .creatingParentsIfNeeded()
+                        .withMode(CreateMode.EPHEMERAL)
+                        .forPath("/" + RETRY_PATH + "/" + serviceName);
+            }
         } catch (Exception e) {
             System.out.println("服务 " + serviceName + "//" + getAddress(serviceAddress) + " 已经注册过了");
         }

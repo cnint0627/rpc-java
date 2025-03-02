@@ -1,10 +1,10 @@
 package org.example.Client.proxy;
 
-import lombok.AllArgsConstructor;
-import org.example.Client.client.IOClient;
-import org.example.Client.client.RpcClient;
+import org.example.Client.client.RetryRpcClient;
+import org.example.Client.client.impl.GuavaRetryRpcClient;
 import org.example.Client.client.impl.NettyRpcClient;
-import org.example.Client.client.impl.SimpleSocketClient;
+import org.example.Client.serviceCenter.ServiceCenter;
+import org.example.Client.serviceCenter.impl.ZKServiceCenter;
 import org.example.common.message.RpcRequest;
 import org.example.common.message.RpcResponse;
 
@@ -13,9 +13,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 public class ClientProxy implements InvocationHandler {
-    private RpcClient rpcClient;
+    private RetryRpcClient rpcClient;
+    private ServiceCenter serviceCenter;
     public ClientProxy() throws InterruptedException {
-        this.rpcClient = new NettyRpcClient();
+        this.serviceCenter = new ZKServiceCenter();
+        this.rpcClient = new GuavaRetryRpcClient(new NettyRpcClient(serviceCenter));
     }
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -25,9 +27,11 @@ public class ClientProxy implements InvocationHandler {
                 .params(args)
                 .paramsType(method.getParameterTypes())
                 .build();
-        RpcResponse response = rpcClient.sendRequest(request);
-        if (response == null) {
-            return null;
+        RpcResponse response;
+        if (serviceCenter.checkRetry(method.getDeclaringClass().getName())) {
+            response = rpcClient.sendRequestWithRetry(request);
+        } else {
+            response = rpcClient.sendRequest(request);
         }
         return response.getData();
     }

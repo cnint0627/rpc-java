@@ -20,9 +20,6 @@ public class NettyRpcClient implements RpcClient {
     private static final Bootstrap bootstrap;
     private static final EventLoopGroup eventLoopGroup;
     private ServiceCenter serviceCenter;
-    public NettyRpcClient() throws InterruptedException {
-        serviceCenter = new ZKServiceCenter();
-    }
     static {
         eventLoopGroup = new NioEventLoopGroup();
         bootstrap = new Bootstrap();
@@ -30,11 +27,14 @@ public class NettyRpcClient implements RpcClient {
                 .channel(NioSocketChannel.class)
                 .handler(new NettyClientInitializer());
     }
+    public NettyRpcClient(ServiceCenter serviceCenter) throws InterruptedException {
+        this.serviceCenter = serviceCenter;
+    }
     @Override
     public RpcResponse sendRequest(RpcRequest request) {
         InetSocketAddress address = serviceCenter.serviceDiscovery(request.getInterfaceName());
         if (address == null) {
-            return null;
+            return RpcResponse.fail();
         }
         String host = address.getHostName();
         int port = address.getPort();
@@ -48,7 +48,7 @@ public class NettyRpcClient implements RpcClient {
             return response;
         } catch (Exception e) {
             e.printStackTrace();
-            return  null;
+            return RpcResponse.fail();
         }
     }
 }

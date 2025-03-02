@@ -18,6 +18,7 @@ public class ZKServiceCenter implements ServiceCenter {
     private ServiceCache cache;
     private LoadBalance balance;
     private static final String ROOT_PATH = "RPC_ROOT";
+    private static final String RETRY_PATH = "RPC_RETRY";
     public ZKServiceCenter() throws InterruptedException {
         // Zookeeper客户端
         RetryPolicy policy = new ExponentialBackoffRetry(100, 3);
@@ -32,7 +33,7 @@ public class ZKServiceCenter implements ServiceCenter {
         // 监听缓存变化
         this.cache = new ServiceCache();
         ZKWatcher zkWatcher = new ZKWatcher(client, cache);
-        zkWatcher.watchToUpdate(ROOT_PATH);
+        zkWatcher.watchToUpdate();
         // 负载均衡
         this.balance = new ConsistencyHashLoadBalance();
 
@@ -43,17 +44,32 @@ public class ZKServiceCenter implements ServiceCenter {
             // 先从本地缓存获取
             List<String> addressList = cache.getServiceFromCache(serviceName);
             if (addressList == null) {
+                // 再从Zookeeper获取
                 addressList = client.getChildren().forPath("/" + serviceName);
-            }
-            if (addressList == null || addressList.isEmpty()) {
-                System.out.println(serviceName + " 服务当前不可用");
-                return null;
+                if (addressList.isEmpty()) {
+                    System.out.println(serviceName + " 服务当前不可用");
+                    return null;
+                }
             }
             String address = balance.balance(addressList);
             return parseAddress(address);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+    @Override
+    public boolean checkRetry(String serviceName) {
+        try {
+            // 先从本地缓存获取
+            List<String> serviceList = cache.getServiceFromCache(RETRY_PATH);
+            if (serviceList == null) {
+                // 再从Zookeeper获取
+                serviceList = client.getChildren().forPath("/" + RETRY_PATH);
+            }
+            return serviceList.contains(serviceName);
+        } catch (Exception e) {
+            return false;
         }
     }
     private InetSocketAddress parseAddress(String address) {

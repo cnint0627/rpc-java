@@ -18,11 +18,11 @@ public class ServiceProvider {
         this.host = host;
         this.port = port;
     }
-    public void provideServiceInterface(Object service) {
+    public void provideServiceInterface(Object service, boolean canRetry) {
         Class<?>[] interfaceName = service.getClass().getInterfaces();
         for (Class<?> clazz: interfaceName) {
             interfaceProvider.put(clazz.getName(), service);
-            serviceRegister.register(clazz.getName(), new InetSocketAddress(host, port));
+            serviceRegister.register(clazz.getName(), new InetSocketAddress(host, port), canRetry);
         }
     }
     public Object getServiceInterface(String interfaceName) {

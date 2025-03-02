@@ -10,7 +10,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 @AllArgsConstructor
-public class SimpleSocketClient implements RpcClient {
+public class SimpleRpcClient implements RpcClient {
     private String host;
     private int port;
 
