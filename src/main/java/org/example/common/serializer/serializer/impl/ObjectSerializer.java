@@ -1,4 +1,4 @@
-package org.example.common.serializer.serializer.imple;
+package org.example.common.serializer.serializer.impl;
 
 
 import org.example.common.serializer.serializer.Serializer;

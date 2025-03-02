@@ -69,6 +69,7 @@ public class ZKServiceCenter implements ServiceCenter {
             }
             return serviceList.contains(serviceName);
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

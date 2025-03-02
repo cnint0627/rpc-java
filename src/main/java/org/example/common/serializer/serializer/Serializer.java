@@ -1,8 +1,8 @@
 package org.example.common.serializer.serializer;
 
 
-import org.example.common.serializer.serializer.imple.JsonSerializer;
-import org.example.common.serializer.serializer.imple.ObjectSerializer;
+import org.example.common.serializer.serializer.impl.JsonSerializer;
+import org.example.common.serializer.serializer.impl.ObjectSerializer;
 
 public interface Serializer {
     byte[] serialize(Object object);

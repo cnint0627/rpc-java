@@ -7,7 +7,7 @@ import io.netty.channel.socket.SocketChannel;
 import org.example.Client.netty.handler.NettyClientHandler;
 import org.example.common.serializer.coder.Decoder;
 import org.example.common.serializer.coder.Encoder;
-import org.example.common.serializer.serializer.imple.JsonSerializer;
+import org.example.common.serializer.serializer.impl.JsonSerializer;
 
 public class NettyClientInitializer extends ChannelInitializer<SocketChannel> {
     @Override

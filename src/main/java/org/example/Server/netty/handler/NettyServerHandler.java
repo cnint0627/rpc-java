@@ -26,11 +26,15 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
 
     public RpcResponse getResponse(RpcRequest rpcRequest) {
         String interfaceName = rpcRequest.getInterfaceName();
+        if (!serviceProvider.getServiceToken(interfaceName)) {
+            System.out.println("服务 " + interfaceName + " 限流");
+            return RpcResponse.fail("服务 " + interfaceName + " 限流");
+        }
         Object service = serviceProvider.getServiceInterface(interfaceName);
         try {
             Method method = service.getClass().getMethod(rpcRequest.getMethodName(), rpcRequest.getParamsType());
-            Object invoke = method.invoke(service, rpcRequest.getParams());
-            return RpcResponse.success(invoke);
+            Object result = method.invoke(service, rpcRequest.getParams());
+            return RpcResponse.success(result);
         } catch (Exception e) {
             e.printStackTrace();
             return RpcResponse.fail();

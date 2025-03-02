@@ -33,6 +33,7 @@ public class ClientProxy implements InvocationHandler {
         } else {
             response = rpcClient.sendRequest(request);
         }
+        System.out.println(response);
         return response.getData();
     }
     public <T>T getProxy(Class<T> clazz) {

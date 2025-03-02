@@ -27,7 +27,14 @@ public class RpcResponse implements Serializable {
         return RpcResponse.builder()
                 .code(500)
                 .message("服务器内部错误")
-                .dataType(Object.class)
+                .dataType(null)
+                .build();
+    }
+    public static RpcResponse fail(String msg) {
+        return RpcResponse.builder()
+                .code(500)
+                .message(msg)
+                .dataType(null)
                 .build();
     }
 }

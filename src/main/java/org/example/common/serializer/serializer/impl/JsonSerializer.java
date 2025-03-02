@@ -1,4 +1,4 @@
-package org.example.common.serializer.serializer.imple;
+package org.example.common.serializer.serializer.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -33,7 +33,7 @@ public class JsonSerializer implements Serializer {
             case 1:
                 RpcResponse response = JSON.parseObject(bytes, RpcResponse.class);
                 Class<?> dataType = response.getDataType();
-                if (!dataType.isAssignableFrom(response.getData().getClass())) {
+                if (dataType != null && !dataType.isAssignableFrom(response.getData().getClass())) {
                     response.setData(JSONObject.toJavaObject((JSONObject) response.getData(), dataType));
                 }
                 object = response;

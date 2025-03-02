@@ -16,7 +16,7 @@ public class TestServer {
     static void singleSystemTest() {
         UserService userService = new UserServiceImpl();
         ServiceProvider serviceProvider = new ServiceProvider("127.0.0.1", 1234);
-        serviceProvider.provideServiceInterface(userService, false);
+        serviceProvider.provideServiceInterface(userService, true);
         RpcServer rpcServer = new NettyRpcServer(serviceProvider);
         rpcServer.start(1234);
     }
