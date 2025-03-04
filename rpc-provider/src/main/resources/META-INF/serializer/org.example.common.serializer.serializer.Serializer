@@ -1,0 +1,2 @@
+Object=org.example.common.serializer.serializer.impl.ObjectSerializer
+Json=org.example.common.serializer.serializer.impl.JsonSerializer

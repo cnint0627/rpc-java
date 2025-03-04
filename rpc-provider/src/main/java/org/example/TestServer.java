@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.common.spi.SpiLoader;
 import org.example.server.provider.ServiceProvider;
 import org.example.server.server.RpcServer;
 import org.example.server.server.impl.NettyRpcServer;
@@ -13,7 +14,7 @@ public class TestServer {
         RpcApplication.initialize();
         host = RpcApplication.getRpcConfig().getHost();
         port = RpcApplication.getRpcConfig().getPort();
-        singleSystemTest();
+        distributedSystemTest();
     }
 
     static void singleSystemTest() {
