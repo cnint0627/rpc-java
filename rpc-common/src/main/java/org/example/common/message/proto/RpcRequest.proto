@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package org.example.common.message.proto;
+
+message RpcRequest {
+  string interface_name = 1;
+  string method_name = 2;
+  repeated bytes params = 3; // 使用 bytes 存储参数，具体类型在反序列化时处理
+  repeated string params_type = 4; // 参数类型，存储为字符串
+}

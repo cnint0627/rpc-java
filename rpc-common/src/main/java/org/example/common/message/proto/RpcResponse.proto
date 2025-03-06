@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package org.example.common.message.proto;
+
+message RpcResponse {
+  int32 code = 1;
+  string message = 2;
+  bytes data = 3; // 使用 bytes 存储数据，具体类型在反序列化时处理
+  string data_type = 4; // 数据类型，存储为字符串
+}

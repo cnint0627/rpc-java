@@ -1,2 +1,4 @@
 Object=org.example.common.serializer.serializer.impl.ObjectSerializer
 Json=org.example.common.serializer.serializer.impl.JsonSerializer
+Hessian=org.example.common.serializer.serializer.impl.HessianSerializer
+Protobuf=org.example.common.serializer.serializer.impl.ProtobufSerializer
